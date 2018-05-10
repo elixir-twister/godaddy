@@ -21,14 +21,23 @@ defmodule Godaddy.Client do
     |> parse
   end
 
+  def update_record(domain, record) do
+
+    "/v1/domains/#{domain}/records/#{record.type}/#{record.name}"
+    |> Api.put(%{"data" => record.ip, "ttl" => record.ttl})
+    |> parse
+  end
+
   def set_nameservers(domain, ns_servers) when is_list(ns_servers) do
     "/v1/domains/#{domain}"
     |> Api.patch(%{"domain" => domain, "nameServers" => ns_servers})
     |> parse
   end
+
   def set_nameservers(domain, ns_provider) when is_binary(ns_provider) do
     set_nameservers(domain, String.to_atom(ns_provider))
   end
+
   def set_nameservers(domain, :digitalocean), do: set_nameservers(domain, @digitalocean_ns_servers)
 
   defp parse({:ok, ""}), do: :ok

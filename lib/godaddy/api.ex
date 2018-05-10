@@ -10,7 +10,7 @@ defmodule Godaddy.Api do
   def secret, do: Application.get_env(:godaddy, :api_secret)
 
   @doc"""
-  Retrieve data from the API using either :get or :post
+  Retrieve data from the API using either :get  :post :patch or :put
   """
   def call(:get, %{source: source, headers: headers}), do: get(source, headers)
   def call(:get, %{source: source}), do: get(source)
@@ -20,6 +20,9 @@ defmodule Godaddy.Api do
   def call(:patch, %{source: source, body: body, headers: headers}), do: patch(source, body, headers)
   def call(:patch, %{source: source, body: body}), do: patch(source, body)
   def call(:patch, %{source: source}), do: patch(source)
+  def call(:put, %{source: source, body: body, headers: headers}), do: put(source, body, headers)
+  def call(:put, %{source: source, body: body}), do: put(source, body)
+  def call(:put, %{source: source}), do: put(source)
 
   @doc"""
   Make an API call using GET.  Optionally provide any required headers
@@ -53,6 +56,19 @@ defmodule Godaddy.Api do
   def patch(source, body, headers) do
     url() <> source
     |> HTTPoison.patch(
+         encode_body(headers[:body_type] || headers[:content_type], body),
+         encode_headers(headers)
+       )
+    |> parse
+  end
+  @doc"""
+  Make an API call using PUT.  Optionally provide any required data and headers
+  """
+  def put(source), do: put(source, %{}, %{})
+  def put(source, body), do: put(source, body, %{})
+  def put(source, body, headers) do
+    url() <> source
+    |> HTTPoison.put(
          encode_body(headers[:body_type] || headers[:content_type], body),
          encode_headers(headers)
        )
